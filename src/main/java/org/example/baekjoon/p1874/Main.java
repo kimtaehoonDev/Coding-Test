@@ -1,13 +1,11 @@
 package org.example.baekjoon.p1874;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
-        List<String> result = new LinkedList<>();
+        StringBuilder bf = new StringBuilder();
         int N = sc.nextInt();
         MyStack stack = new MyStack(N);
         int now = 1; // 스택에 들어가려고 대기중인 숫자
@@ -21,15 +19,15 @@ public class Main {
             if (now <= input) {
                 for(int j=now;j<input+1;j++) {
                     stack.push(j);
-                    result.add("+");
+                    bf.append("+\n");
                 }
                 stack.pop();
-                result.add("-");
+                bf.append("-\n");
                 now = input + 1;
             } else { // 기존보다 작은 숫자가 들어옴
                 if (stack.peek() == input) {
                     stack.pop();
-                    result.add("-");
+                    bf.append("-\n");
                 } else {
                     canAnswer = false;
                 }
@@ -37,9 +35,7 @@ public class Main {
         }
 
         if (canAnswer) {
-            for(String each: result) {
-                System.out.println(each);
-            }
+            System.out.println(bf);
         } else {
             System.out.println("NO");
         }

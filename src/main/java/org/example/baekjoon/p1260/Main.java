@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.StringJoiner;
 import java.util.StringTokenizer;
 
@@ -67,13 +68,13 @@ public class Main {
             return;
         }
         // 큐를 사용한다
-        List<Integer> queue = new LinkedList<>(); // TODO 어떤 자료구조를 사용?
+        Queue<Integer> queue = new LinkedList<>();
         queue.add(node);
         isVisited[node] = true;
         result.add(node);
 
-        while(queue.size() != 0) {
-            int target = queue.remove(0);
+        while(!queue.isEmpty()) {
+            int target = queue.poll();
 
             boolean[] isConnected = graph[target];
             for(int i=1; i<isConnected.length;i++) {

@@ -1,17 +1,22 @@
 package org.example.baekjoon.p2751;
 
-import java.util.Scanner;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.StringTokenizer;
 
 // merge, 01234오름차순
 public class Main {
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        int N = sc.nextInt();
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int N = Integer.parseInt(st.nextToken());
 
         // 입력을 받아 배열을 만든다
         int[] ary = new int[N];
         for (int i = 0; i < N; i++) {
-            ary[i] = sc.nextInt();
+            ary[i] = Integer.parseInt(br.readLine());
         }
 
         mergeSort(ary, 0, N - 1);

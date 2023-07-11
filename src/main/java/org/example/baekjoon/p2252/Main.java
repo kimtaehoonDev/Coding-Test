@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.StringJoiner;
 import java.util.StringTokenizer;
 
@@ -19,35 +20,43 @@ public class Main {
 
         int[] isConnected = new int[N+1];
         boolean[] isVisited = new boolean[N+1];
-        List<Integer>[] ary = (List<Integer>[]) new List<?>[N+1];
+        List<List<Integer>> ary = new ArrayList<>(N+1);
+        for(int i=0; i<N+1; i++) {
+            ary.add(new LinkedList<>());
+        }
 
         for(int i=0; i<M;i++) {
             st = new StringTokenizer(br.readLine());
             int smaller = Integer.parseInt(st.nextToken());
             int taller = Integer.parseInt(st.nextToken());
-            if (ary[smaller] == null) {
-                ary[smaller] = new LinkedList<>();;
-            }
-            ary[smaller].add(taller);
+            ary.get(smaller).add(taller);
             isConnected[taller] += 1;
         }
 
         List<Integer> answer = new ArrayList<>(N);
-        while (answer.size() != N) {
-            for(int j=1; j<N+1;j++) {
-                if (isConnected[j] == 0 && !isVisited[j]) {
-                    answer.add(j);
-                    isVisited[j] = true;
-                    List<Integer> next = ary[j];
-                    if (next == null) {
-                        continue;
-                    }
-                    for (Integer each : next) {
-                        isConnected[each] -= 1;
-                    }
+        Queue<Integer> queue = new LinkedList<>();
+
+        // 큐에 차수0인거 먼저 넣는다
+        for(int i=1; i<N+1; i++) {
+            if (isConnected[i] == 0) {
+                queue.add(i);
+            }
+        }
+
+        while(!queue.isEmpty()) {
+            Integer target = queue.poll();
+            answer.add(target);
+            isVisited[target] = true;
+
+            List<Integer> next = ary.get(target);
+            for (Integer each : next) {
+                isConnected[each] -= 1;
+                if (isConnected[each] == 0) {
+                    queue.add(each);
                 }
             }
         }
+
 
         StringJoiner sj = new StringJoiner(" ");
         for (Integer each : answer) {

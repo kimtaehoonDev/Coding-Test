@@ -4,43 +4,30 @@ import java.util.*;
 import java.math.*;
 
 public class Main {
-    public static Map<Integer, Integer> cache = new HashMap<>();
+    static long c;
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
-        int A = sc.nextInt();
-        int B = sc.nextInt();
-        int C = sc.nextInt();
+        long A = sc.nextLong();
+        long B = sc.nextLong();
+        c = sc.nextLong();
 
-        int answer = calculateMod(A, B, C);
+        long answer = calculateMod(A, B);
         System.out.println(answer);
     }
 
-    private static int calculateMod(int a, int b, int c) {
-        return calculateModHelper(a, b, c);
+    private static long calculateMod(long num, long exp) {
+        if (exp==1) {
+            return num%c;
+        }
+
+        // 코드 변경 사유
+        // 예를 들어 9인 경우 calculate(5) * calculate(4) 이거나, calculate(4) ^ 2 * calculate(1) 이나 같음
+        long temp = calculateMod(num, exp / 2);
+        if (exp % 2 == 1) {
+            return  (((temp * temp) % c) * (num%c))%c;
+        }
+        return (temp * temp) % c;
     }
 
-    private static int calculateModHelper(int a, int b, int c) {
-        if (b == 0) {
-            return 1;
-        }
-        if (cache.containsKey(b)) {
-            return cache.get(b);
-        }
-
-        if (b == 1) {
-            cache.put(b, a%c);
-            return cache.get(b);
-        }
-        int b1 = b / 2;
-        int b2 = b - b1;
-        int left = calculateModHelper(a, b1, c);
-        int right = calculateModHelper(a, b2, c);
-
-        BigInteger result = new BigInteger(String.valueOf(left))
-            .multiply(new BigInteger(String.valueOf(right)))
-            .mod(new BigInteger(String.valueOf(c)));
-        cache.put(b, result.intValue());
-        return result.intValue();
-    }
 }

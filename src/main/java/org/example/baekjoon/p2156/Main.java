@@ -15,6 +15,7 @@ public class Main {
         dp = new int[N+1];
         for(int i=1; i<N+1; i++) {
             ary[i] = Integer.parseInt(br.readLine());
+            dp[i] = -1;
         }
         System.out.println(solve(N));
     }
@@ -23,7 +24,7 @@ public class Main {
         if (n <= 0) {
             return 0;
         }
-        if (dp[n] != 0) {
+        if (dp[n] != -1) {
             return dp[n];
         }
         int max = -1;

@@ -1,11 +1,11 @@
-package org.example.programmers;
+package org.example.programmers.todo;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
-// TODO
+// TODO https://school.programmers.co.kr/learn/courses/30/lessons/42895
 public class N으로_표현 {
     public static int PLUS = 0;
     public static int MINUS = 1;

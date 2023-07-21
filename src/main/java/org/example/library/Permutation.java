@@ -10,11 +10,33 @@ public class Permutation {
         for (int i = 0; i < 4; i++) {
             ary[i] = i;
         }
+
+        perm(ary, new int[2], new boolean[4], 0, 4, 2);
+        System.out.println("========");
+
         List<int[]> permutation = permutation(ary, 2);
         for (int[] each : permutation) {
             System.out.println(Arrays.toString(each));
         }
         System.out.println("크기: " + permutation.size());
+    }
+
+
+    static void perm(int[] arr, int[] output, boolean[] visited, int depth, int n, int r) {
+        if (depth == r) {
+            System.out.println(Arrays.toString(Arrays.copyOfRange(output, 0, r)));
+            return;
+        }
+
+        for (int i=0; i<n; i++) {
+            if (!visited[i]) {
+                visited[i] = true;
+                output[depth] = arr[i];
+                perm(arr, output, visited, depth + 1, n, r);
+                output[depth] = 0;
+                visited[i] = false;;
+            }
+        }
     }
 
     // nPr

@@ -4,29 +4,20 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.PriorityQueue;
 import java.util.StringTokenizer;
 
-// 아이디어를 잘못 냄.
-// 가능한 경우의 수가 작은거 순서대로 채워나가면 될 거라 생각했는데 불가능한 케이스가 생김
+// 아이디어를 잘못 냄 -> 실패
+// 백트래킹으로 아이디어 변경 후 풀이 -> 성공
 
-// 아래 예시에서 불가능함
-//0 4 0 0 0 0 2 0 0
-//0 6 0 0 0 5 0 0 0
-//2 0 5 0 8 0 0 0 7
-//0 0 6 0 0 0 0 0 0
-//5 0 7 0 0 1 9 0 0
-//0 0 0 0 4 0 0 1 0
-//0 0 0 3 0 0 0 0 8
-//0 2 0 0 0 0 0 0 0
-//9 0 1 0 0 4 7 0 0
-
+// 처음에 백트래킹을 생각했다. 하지만 더 효율적인 방법을 생각하다가 잘못된 아이디어를 생각해 틀린 문제
 
 public class Main {
     static int[][] graph = new int[9][9];
     static List<Node> empties = new ArrayList<>();
+    static boolean checkAnswer = false;
+
+
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         for(int i=0; i<9; i++) {
@@ -43,27 +34,7 @@ public class Main {
 //            System.out.println(Arrays.toString(graph[i]));
 //        }
 
-        while(empties.size() != 0) {
-            // 그래프에서 공백을 찾아 안되는 값들을 확인한다
-            PriorityQueue<Node> queue = new PriorityQueue<>(new Comparator<Node>() {
-                @Override
-                public int compare(Node o1, Node o2) {
-                    return o1.cases.size() - o2.cases.size(); // 가능한 경우가 더 적으면 우선순위를 갖는다
-                }
-            });
-
-            for(Node empty: empties) {
-                List<Integer> cases = findNums(empty);
-                empty.setCases(cases);
-                queue.add(empty);
-            }
-
-            Node target = queue.poll();
-
-            graph[target.x][target.y] = target.cases.get(0);
-
-            empties.remove(target);
-        }
+        sudoku(0);
 
         // 결과 출력
         StringBuilder sb = new StringBuilder();
@@ -80,17 +51,27 @@ public class Main {
         System.out.println(sb);
     }
 
-    static List<Integer> findNums(Node node) {
-        List<Integer> result = new ArrayList<>();
-        // 가로, 세로, 대각선 모두 가능한 걸 찾는다
-        for(int i=1; i<=9; i++) {
-            boolean canResult = validateNum(node, i);
-            if (canResult) {
-                result.add(i);
-            }
+    public static void sudoku(int idx) {
+        if (idx == empties.size()) {
+            // 종료조건
+            checkAnswer = true;
+            return;
         }
-//        System.out.println(node.x + "/" + node.y + "->" + result); // 특정 위치에 들어갈 수 있는 값
-        return result;
+        Node target = empties.get(idx);
+
+        for(int num=1; num<=9; num++) {
+            boolean canAnswer = validateNum(target, num);
+            if (!canAnswer) {
+                continue;
+            }
+
+            graph[target.x][target.y] = num;
+            sudoku(idx + 1);
+            if (checkAnswer) {
+                return;
+            }
+            graph[target.x][target.y] = 0;
+        }
     }
 
     // node자리에 i가 들어갈 수 있는가?
@@ -132,3 +113,6 @@ public class Main {
         }
     }
 }
+
+
+

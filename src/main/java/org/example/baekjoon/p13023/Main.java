@@ -1,4 +1,4 @@
-package org.example.p13023;
+package org.example.baekjoon.p13023;
 
 import java.io.BufferedReader;
 import java.io.IOException;

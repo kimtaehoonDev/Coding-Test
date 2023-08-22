@@ -5,76 +5,33 @@ package org.example.programmers;
 public class 두_원_사이의_정수쌍 {
     class Solution {
         public long solution(int r1, int r2) {
-            long cnt = 0;
-            cnt += calculate(r2);
-            cnt -= calculate2(r1);
-            return cnt;
-        }
+            long answer = 0;
 
-        // 반지름 r일 때, 안에 있는 점들의 개수를 구한다
-        public long calculate(int r) {
-            long cnt = 0;
-            for(long i=0; i<=r; i++) {
-                if (i==0) { //엣지케이스
-                    cnt += (2*r + 1);
+            for (long i = 0; i <= r2; i++) {
+                if (i == 0) {
+                    answer += 2 * (r2 - r1 + 1);
                     continue;
                 }
+                long start = (long) Math.ceil(Math.sqrt((long) r1 * r1 - (long) i * i));
+                long end = (long) Math.floor(Math.sqrt((long) r2 * r2 - (long) i * i));
 
-                long temp = find(i, r);
-                cnt += 2 * temp;
-            }
-            return cnt;
-        }
+                long temp = 0;
 
-        // x값이 i일 때, 가능한 y값의 개수
-        public long find(long i, long r) {
-            long low = 0;
-            long high = r;
+                // x값이 i일 때, y가 양수일때와 음수일 때 두 가지 케이스가 존재한다.
+                temp = 2 * (end - start + 1);
 
-            while(low < high) {
-                long mid = (low + high) / 2;
-
-                if (mid * mid <= r * r - i * i) {
-                    low = mid + 1;
-                } else {
-                    high = mid;
-                }
-            }
-            return (low - 1) * 2 + 1;
-        }
-
-        public long calculate2(int r) {
-            long cnt = 0;
-            for(long i=0; i<=r; i++) {
-                if (i==0) { //엣지케이스
-                    cnt += (2*r - 1);
-                    continue;
+                // start == 0이라는 건 x좌표에 있는 점이다.
+                // 즉, y가 양수일때나 음수일때 똑같은 점이기 때문에 한 개를 빼줘야 한다.
+                if (start == 0) {
+                    temp--;
                 }
 
-                long temp = find2(i, r);
-                cnt += 2 * temp;
-            }
-            return cnt;
-        }
+                // x가 양수일때와 음수일 때 두 가지 케이스가 존재한다.
+                answer += (temp * 2);
 
-        public long find2(long i, long r) {
-            if (i == r) {
-                return 0;
             }
-            long low = 0;
-            long high = r;
 
-            while(low < high) {
-                long mid = (low + high) / 2;
-
-                if (mid * mid < r * r - i * i) {
-                    low = mid + 1;
-                } else {
-                    high = mid;
-                }
-            }
-            return (low - 1) * 2 + 1;
+            return answer;
         }
     }
-
 }

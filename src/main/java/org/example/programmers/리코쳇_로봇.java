@@ -27,7 +27,7 @@ public class 리코쳇_로봇 {
             for(int j=0; j<board[i].length; j++) {
                 visited[i][j] = -1;
                 if (board[i][j] == 'R') {
-                    start = new Node(i,j,0);
+                    start = new Node(i,j);
                 }
             }
         }
@@ -38,7 +38,7 @@ public class 리코쳇_로봇 {
     public int bfs(Node start) {
         Queue<Node> queue = new LinkedList<>();
         queue.add(start);
-        visited[start.x][start.y] = start.count;
+        visited[start.x][start.y] = 0;
 
         while(!queue.isEmpty()) {
             start = queue.poll();
@@ -51,10 +51,10 @@ public class 리코쳇_로봇 {
                 }
 
                 queue.add(arrival);
-                visited[arrival.x][arrival.y] = arrival.count;
+                visited[arrival.x][arrival.y] = visited[start.x][start.y] + 1;
 
                 if (board[arrival.x][arrival.y] == 'G') {
-                    return arrival.count;
+                    return visited[arrival.x][arrival.y];
                 }
             }
         }
@@ -72,10 +72,10 @@ public class 리코쳇_로봇 {
             int ny = originalY + dy[direction];
 
             if (nx < 0 || ny < 0 || board.length <= nx || board[0].length <= ny) {
-                return new Node(originalX, originalY, start.count + 1);
+                return new Node(originalX, originalY);
             }
             if (board[nx][ny] == 'D') {
-                return new Node(originalX, originalY, start.count + 1);
+                return new Node(originalX, originalY);
             }
 
             originalX = nx;
@@ -86,14 +86,13 @@ public class 리코쳇_로봇 {
     static class Node {
         int x;
         int y;
-        int count;
 
-        public Node(int x, int y, int count) {
+        public Node(int x, int y) {
             this.x = x;
             this.y = y;
-            this.count = count;
         }
     }
+
 }
 
 

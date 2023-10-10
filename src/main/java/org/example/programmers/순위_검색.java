@@ -1,139 +1,107 @@
 package org.example.programmers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// 50분
-// 해당 풀이로 풀면 시간 초과가 날 걸 예상했지만, 다른 풀이가 떠오르지 않아 시도했고 역시나 틀림
-class 순위_검색 {
-    static Map<String, List<Integer>> languages = new HashMap<>();
-    static Map<String, List<Integer>> types = new HashMap<>();
-    static Map<String, List<Integer>> careers = new HashMap<>();
-    static Map<String, List<Integer>> foods = new HashMap<>();
-    static Scores scores = new Scores();
-    // 점수별로 정렬
+// info가 하나 입력되면 info로 만들 수 있는 Case를 만든다.
+// ex. cpp, backend, junior, pizza 가 입력되면
+// 만들 수 있는 Case에는 cpp and backend and junior and pizza부터, _ and backend ...., _ and _ and _ and _ and 까지 존재한다.
+// 이 모든 Case에 학생의 Score를 추가한다. 이후 쿼리를 날릴 때, 해당 쿼리에서 점수가 X 이상인 값들을 조회하면 되는 문제
+// 시간복잡도를 향상시키기 위해 모든 Case에 들어가는 List에 대해 정렬한다.
+
+class Solution {
+    static Map<String, List<Integer>> cache = new HashMap<>();
+    static int[] scores;
 
     public int[] solution(String[] info, String[] query) {
-        int[] answer = new int[query.length];
+        int[] answers = new int[query.length];
+
+        init();
+        scores = new int[info.length];
 
         int idx = -1;
         for(String each: info) {
             idx++;
             String[] temp = each.split(" ");
-            addValue(temp[0], languages, idx);
-            addValue(temp[1], types, idx);
-            addValue(temp[2], careers, idx);
-            addValue(temp[3], foods, idx);
+            int value = Integer.parseInt(temp[4]);
+            // temp를 사용해서 쪼개쪼개
+            // 그리고 점수는 따로 기록해
+            cache.get(makeKey(temp[0], temp[1], temp[2], temp[3])).add(value);
 
-            scores.add(new Node(idx, Integer.parseInt(temp[4]))); // 정렬해서 넣는다
+            cache.get(makeKey("-", temp[1], temp[2], temp[3])).add(value);
+            cache.get(makeKey(temp[0], "-", temp[2], temp[3])).add(value);
+            cache.get(makeKey(temp[0], temp[1], "-", temp[3])).add(value);
+            cache.get(makeKey(temp[0], temp[1], temp[2], "-")).add(value);
+
+            cache.get(makeKey("-", "-", temp[2], temp[3])).add(value);
+            cache.get(makeKey("-", temp[1], "-", temp[3])).add(value);
+            cache.get(makeKey("-", temp[1], temp[2], "-")).add(value);
+            cache.get(makeKey(temp[0], "-", "-", temp[3])).add(value);
+            cache.get(makeKey(temp[0], "-", temp[2], "-")).add(value);
+            cache.get(makeKey(temp[0], temp[1], "-", "-")).add(value);
+
+            cache.get(makeKey("-","-","-", temp[3])).add(value);
+            cache.get(makeKey("-","-",temp[2], "-")).add(value);
+            cache.get(makeKey("-", temp[1], "-", "-")).add(value);
+            cache.get(makeKey(temp[0], "-", "-", "-")).add(value);
+
+            cache.get(makeKey("-", "-", "-", "-")).add(value);
         }
-        scores.sort();
+        // 전부 다 정렬해준다
+        for (String key : cache.keySet()) {
+            List<Integer> temp = cache.get(key);
+            Collections.sort(temp);
+        }
 
         idx = -1;
-        for(String cmd: query) {
+        for (String cmdPreprocess : query) {
             idx++;
-
-            String[] temp = cmd.split(" and ");
-            String[] temp2 = temp[temp.length - 1].split(" ");
-
-            Integer score = Integer.parseInt(temp2[1]);
-            temp[temp.length - 1] = temp2[0];
-
-            // 명령을 알아서 실행한다. temp에는 각 조건들이 있고, score에는 점수가 있다
-            List<Integer> result = scores.findEqualsAndGreaterThan(score); // 가격을 가지고 초기화
-            // System.out.println("시작");
-            // System.out.println(result);
-            if (!temp[0].equals("-")) {
-                if (!languages.containsKey(temp[0])) {
-                    answer[idx] = 0;
-                    continue;
-                }
-                result.retainAll(languages.get(temp[0]));
-            }
-            // System.out.println(result);
-            if (!temp[1].equals("-")) {
-                if (!types.containsKey(temp[1])) {
-                    answer[idx] = 0;
-                    continue;
-                }
-                result.retainAll(types.get(temp[1]));
-            }
-            // System.out.println(result);
-            if (!temp[2].equals("-")) {
-                if (!careers.containsKey(temp[2])) {
-                    answer[idx] = 0;
-                    continue;
-                }
-                result.retainAll(careers.get(temp[2]));
-            }
-            // System.out.println(result);
-            if (!temp[3].equals("-")) {
-                if (!foods.containsKey(temp[3])) {
-                    answer[idx] = 0;
-                    continue;
-                }
-                result.retainAll(foods.get(temp[3]));
-            }
-            // System.out.println(result);
-            answer[idx] = result.size();
+            String[] temp = cmdPreprocess.split(" ");
+            String cmd = String.join(" ", Arrays.copyOfRange(temp, 0, temp.length - 1));
+            int value = Integer.parseInt(temp[temp.length - 1]);
+            List<Integer> ids = cache.get(cmd);
+            answers[idx] = calculateEqualOrGreaterThan(ids, value);
         }
-
-        return answer;
+        return answers;
     }
 
-    void addValue(String value, Map<String, List<Integer>> store, int idx) {
-        if (!store.containsKey(value)) {
-            store.put(value, new ArrayList<>());
+    private int calculateEqualOrGreaterThan(List<Integer> ids, int value) {
+        int start = 0;
+        int end = ids.size();
+        while(start < end) {
+            int mid = (start + end) / 2;
+            if (ids.get(mid) >= value) {
+                end = mid;
+            } else {
+                start = mid + 1;
+            }
         }
-        store.get(value).add(idx);
+
+        return ids.size() - start;
     }
 
-    static class Node {
-        int idx;
-        int score;
+    public void init() {
+        List<String> languages = List.of("cpp", "java", "python", "-");
+        List<String> types = List.of("backend", "frontend", "-");
+        List<String> careers = List.of("junior","senior", "-");
+        List<String> foods = List.of("chicken", "pizza", "-");
 
-        public Node(int idx, int score) {
-            this.idx = idx;
-            this.score = score;
+        for(String lang : languages) {
+            for(String type: types) {
+                for(String career: careers) {
+                    for(String food: foods) {
+                        cache.put(lang + " and " + type + " and " + career + " and " + food, new ArrayList<>());
+                    }
+                }
+            }
         }
     }
 
-    static class Scores {
-        List<Node> store = new ArrayList<>();
-
-        public void add(Node node) {
-            store.add(node);
-        }
-
-        // 작은 값이 우선순위를 갖도록 정렬된다
-        public void sort() {
-            Collections.sort(store, (n1, n2) -> {
-                return n1.score - n2.score;
-            });
-        }
-
-        public List<Integer> findEqualsAndGreaterThan(int value) {
-            // score에서 하한 이분탐색을 때리면 될듯?
-            int start = 0;
-            int end = store.size();
-
-            while(start < end) {
-                int mid = (start + end) / 2;
-                if (store.get(mid).score >= value) {
-                    end = mid;
-                } else {
-                    start = mid + 1;
-                }
-            }
-
-            List<Integer> result = new ArrayList<>();
-            for(int i=start; i<store.size(); i++) {
-                result.add(store.get(i).idx);
-            }
-            return result;
-        }
+    public String makeKey(String x1, String x2, String x3, String x4) {
+        return x1 + " and " + x2 + " and " + x3 + " and " + x4;
     }
 }

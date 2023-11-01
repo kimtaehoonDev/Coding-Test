@@ -5,74 +5,47 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-// 실패 : 시간 초과
+import java.util.*;
+
+// 답안 참조. 아이디어는 같았으나 구현 방식이 달랐음
+// 투포인터를 사용하면 쉽게 풀 수 있구나.
+// 이전의 내 풀이에서는 여러 분기를 거치면서 복잡하게 정답을 찾고 있는데 여기에서는 투포인터 && HashMap의 원소 개수로 간단하게 문제를 풀어버린다.
+// 참고한 풀이 : https://taehoung0102.tistory.com/206
 class 보석_쇼핑 {
     public int[] solution(String[] gemsStr) {
         // init
-        int start = 0;
-        int end = gemsStr.length - 1;
-        int length = end - start;
+        int length = 1000000000;
+        int[] answer = new int[2];
 
-        Map<String, Integer> lastIdxStore = new HashMap<>();
+        Map<String, Integer> store = new HashMap<>(); // key : 보석명, value : 보석개수
         Set<String> gems = new HashSet<>(); // 어떤 보석들이 있었는지 기록
         for(String each: gemsStr) {
             gems.add(each);
         }
-        for(String gem: gems) {
-            lastIdxStore.put(gem, null);
-        }
 
         // code
-        for(int i=0; i<gemsStr.length; i++) {
-            String now = gemsStr[i];
-            Integer lastIdx = lastIdxStore.get(now);
+        int start = 0;
+        for(int end=0; end<gemsStr.length; end++) {
+            String gem = gemsStr[end];
+            store.put(gem, store.getOrDefault(gem, 0) + 1);
 
-            lastIdxStore.put(now, i);
-
-            // 모든 gems가 다 lastIdxStore에 기록이 있는거지
-            boolean canAnswer = true;
-            for(String each: gems) {
-                Integer idx = lastIdxStore.get(each);
-                if (idx == null) {
-                    canAnswer = false;
-                    break;
-                }
+            String startGem = gemsStr[start];
+            while(store.get(startGem) > 1) {
+                store.put(startGem, store.get(startGem) - 1);
+                start++;
+                startGem = gemsStr[start];
             }
-            // 조건을 만족하면
-            if (canAnswer) {
-                // 중복있던거 중 가장 큰 값을 찾는다 (중복 한개도 없었으면 그놈이 답 아냐?)
-                int min = 100000000;
-                String gemHavingMin = "";
-                for(String each: gems) {
-                    Integer idx = lastIdxStore.get(each);
-                    if (idx < min) {
-                        min = idx;
-                        gemHavingMin = each;
-                    }
-                }
-                // System.out.println(i + " 인덱스에서 " + gemHavingMin + "는 " + min);
-                // System.out.println(lastIdxStore);
-                // System.out.println("===0");
-                if (gemHavingMin.equals("")) {
-                    start = 0;
-                    end = i;
-                    break;
-                } else {
-                    lastIdxStore.put(gemHavingMin, null);
-                    if (i - min < length) {
-                        // System.out.println("갱신" + i);
-                        start = min;
-                        end = i;
-                        length = end - start;
-                    }
+
+            if (store.size() == gems.size()) {
+                if (end - start < length) {
+                    answer[0] = start + 1;
+                    answer[1] = end + 1;
+                    length = end - start;
+                    // System.out.println(answer[0] + " " + answer[1]);
                 }
             }
         }
 
-
-        int[] answer = new int[2];
-        answer[0] = start + 1;
-        answer[1] = end + 1;
         return answer;
     }
 

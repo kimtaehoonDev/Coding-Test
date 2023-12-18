@@ -2,8 +2,13 @@ package org.example.programmers;
 
 import java.util.*;
 
-// 아이디어 자체가 동일함. 사람들이 올려둔 반례를 다 통과해서
-// 코드를 버리고 새롭게 짜야 하는데 개인적으로 너무 아쉴움... 시간이 지나고 그냥 다시 풀기
+// 충격이다....
+// 알고리즘 자체는 맞았음. 그런데 틀린 이유는 Integer 객체에 대해 == 비교를 했기 때문이다.
+
+// Integer 객체 값이 -128에서 127 사이를 벗어나면, == 비교할 때 call by reference 비교를 한다.
+// 이 문제가 틀렸던 이유는 그것때문...
+// 와,,, 충격적이다. 그동안 래퍼객체의 동등성 비교가 어떻게 일어나는지 왜 관심을 갖지 않았을까
+// 그동안 기계적으로 Objects.equals를 사용했던 걸까. 이제와서야 이 문제를 마주쳤다니 굉장히 충격적이고 자바 공부를 다시 해야겠다 생각이 든다.....
 class 택배상자 {
     public int solution(int[] order) {
         int answer = 0;
@@ -32,7 +37,7 @@ class 택배상자 {
                 inputs.poll();
                 now = selected + 1;
                 answer++;
-            } else if ((now > selected) && subContainer.peek() == selected) {
+            } else if ((now > selected) && Objects.equals(subContainer.peek(), selected)) {
                 // subContainer에서 하나 빼고, answer를 더해준다. now는 그대로 유지한다
                 inputs.poll();
                 subContainer.pop();

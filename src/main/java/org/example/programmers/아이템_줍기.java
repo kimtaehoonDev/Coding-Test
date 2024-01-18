@@ -2,103 +2,81 @@ package org.example.programmers;
 
 import java.util.*;
 
-// 실패 / BFS / 1시간 13분
-// 풀이를 잘못 생각함. 사각형이 겹쳐있을 때 외부로만 이동 가능한데, 내 풀이에서는 내부 선을 타고 이동 가능
+// 아이디어 참조 후 성공
+// https://arinnh.tistory.com/88
+// 2배를 해주는 이유
+// 첫 번째 입출력 예시에서 (3,5) -> (4,5)로 이동해야 함.
+// 그런데 우리는 Edge를 저장한게 아니라 Spot을 저장했음. 그렇기 때문에 (3,5) -> (3, 6)으로 점프뛰는 걸 막을 수 없음.
+// 둘 사이에 연결되어 있지 않음에도, 노드만으로 그래프를 표현하다보니 생긴 문제.
+// 이에 대한 해결책으로 값을 노드들 간 거리를 2배 늘려준다.
+// -> (3,5) -> (3.5,5) -> (4,5) 이렇게 이동 가능 but (3,5) -> (3, 5.5)[존재X] 이렇게 점프 불가능해짐.
 
 class 아이템_줍기 {
-    static final int LEFT = 0;
-    static final int BOT = 1;
-    static final int RIGHT = 2;
-    static final int TOP = 3;
-    static Map<Integer, Set<Integer>> graph = new HashMap<>();
-    static int[] visited = new int[2500];
+
+    static int[][] map;
+    static int answer;
+    int[][] visited;
 
     public int solution(int[][] rectangle, int characterX, int characterY, int itemX, int itemY) {
-        int answer = -1;
+        answer = 0;
+        map = new int[101][101];
 
-        for(int[] each : rectangle) {
-            for(int i = each[BOT]; i<each[TOP]; i++) {
-                int x1 = calcIdx(each[LEFT], i);
-                int y1 = calcIdx(each[LEFT], i+1);
-                if (!graph.containsKey(x1)) {
-                    graph.put(x1, new HashSet<>());
-                }
-                graph.get(x1).add(y1);
-                if (!graph.containsKey(y1)) {
-                    graph.put(y1, new HashSet<>());
-                }
-                graph.get(y1).add(x1);
-
-                x1 = calcIdx(each[RIGHT], i);
-                y1 = calcIdx(each[RIGHT], i+1);
-                if (!graph.containsKey(x1)) {
-                    graph.put(x1, new HashSet<>());
-                }
-                graph.get(x1).add(y1);
-                if (!graph.containsKey(y1)) {
-                    graph.put(y1, new HashSet<>());
-                }
-                graph.get(y1).add(x1);
-            }
-            for(int i = each[LEFT]; i<each[RIGHT]; i++) {
-                int x1 = calcIdx(i, each[BOT]);
-                int y1 = calcIdx(i+1, each[BOT]);
-                if (!graph.containsKey(x1)) {
-                    graph.put(x1, new HashSet<>());
-                }
-                graph.get(x1).add(y1);
-                if (!graph.containsKey(y1)) {
-                    graph.put(y1, new HashSet<>());
-                }
-                graph.get(y1).add(x1);
-
-                x1 = calcIdx(i, each[TOP]);
-                y1 = calcIdx(i+1, each[TOP]);
-                if (!graph.containsKey(x1)) {
-                    graph.put(x1, new HashSet<>());
-                }
-                graph.get(x1).add(y1);
-                if (!graph.containsKey(y1)) {
-                    graph.put(y1, new HashSet<>());
-                }
-                graph.get(y1).add(x1);
-            }
-        }
-        // 그래프 생성 끝
-        // System.out.println(graph);
-
-        // start -> end까지 도착하는 최단거리
-        int start = calcIdx(characterX, characterY);
-        int end = calcIdx(itemX, itemY);
-
-        Queue<int[]> queue = new PriorityQueue<>(new Comparator<>() {
-            @Override
-            public int compare(int[] a1, int[] a2) {
-                return a1[1] - a2[1];
-            }
-        });
-        queue.add(new int[] {start, 0}); // start까지 0번 이동
-        visited[start] = 0;
-
-        while(!queue.isEmpty()) {
-            int[] now = queue.poll();
-            if (now[0] == end) {
-                answer = now[1];
-                break;
-            }
-            for(Integer next : graph.get(now[0])) {
-                if (visited[next] != 0) {
-                    continue;
-                }
-                queue.add(new int[] {next, now[1] + 1});
-                visited[next] = visited[now[0]] + 1;
-            }
+        for(int i = 0; i<rectangle.length; i++) {
+            fill(2 * rectangle[i][0], 2 * rectangle[i][1], 2 * rectangle[i][2], 2 * rectangle[i][3]);
         }
 
-        return answer;
+        bfs(2 * characterX, 2 * characterY, 2 * itemX, 2 * itemY);
+        return visited[2 * itemX][2 * itemY] / 2;
     }
 
-    static int calcIdx(int x, int y) {
-        return 50 * (x-1) + (y-1);
+    static int[] dx = {-1,0,1,0};
+    static int[] dy = {0,1,0,-1};
+    public void bfs(int startX, int startY, int endX, int endY) {
+        visited = new int[101][101];
+        Queue<Integer> queue = new LinkedList<>();
+        queue.add(startX);
+        queue.add(startY);
+
+        while(!queue.isEmpty()) {
+            int x = queue.poll();
+            int y = queue.poll(); // x값 y값을 뺀다
+
+            for(int i = 0; i<4; i++) {
+                int nx = x + dx[i];
+                int ny = y + dy[i];
+                if (outOfRange(nx, ny))
+                    continue;
+                // 테두리가 아니면 이동불가능, 이미 방문했으면 갈 필요 없음
+                if (map[nx][ny] != 1 || visited[nx][ny] != 0)
+                    continue;
+
+                visited[nx][ny] = visited[x][y] + 1;
+                // System.out.println(x +", "+ y + " 위치에서 " + nx + ", " + ny + "로 이동 : " + visited[nx][ny]);
+                if (nx == endX && ny == endY) {
+                    return;
+                }
+
+                queue.add(nx);
+                queue.add(ny);
+            }
+        }
+    }
+
+    public boolean outOfRange(int x, int y) {
+        return x < 0 || x >= 101 || y < 0 || y >= 101;
+    }
+
+    // 만약 사각형 2개가 겹쳤다? 이후에 들어온 사각형의 테두리를 1로 만들어줌. 근데 이미 값이 2(첫번째 사각형의 내부) -> 무시
+    public void fill(int x1, int y1, int x2, int y2) {
+        for(int i = x1; i<=x2; i++) {
+            for(int j = y1; j<=y2; j++) {
+                if (map[i][j] == 2)
+                    continue;
+                map[i][j] = 2;
+                if(i == x1 || i == x2 || j == y1 || j == y2) {
+                    map[i][j] = 1;
+                }
+            }
+        }
     }
 }

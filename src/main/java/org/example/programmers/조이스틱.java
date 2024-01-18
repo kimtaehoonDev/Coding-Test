@@ -3,7 +3,7 @@ package org.example.programmers;
 import java.util.ArrayList;
 import java.util.List;
 
-class Solution {
+class 조이스틱 {
     public int solution(String name) {
         List<Integer> moves = new ArrayList<>(name.length());
         char[] chars = name.toCharArray();

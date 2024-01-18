@@ -13,7 +13,7 @@ import java.util.Map;
 // 이 모든 Case에 학생의 Score를 추가한다. 이후 쿼리를 날릴 때, 해당 쿼리에서 점수가 X 이상인 값들을 조회하면 되는 문제
 // 시간복잡도를 향상시키기 위해 모든 Case에 들어가는 List에 대해 정렬한다.
 
-class Solution {
+class 순위_검색 {
     static Map<String, List<Integer>> cache = new HashMap<>();
     static int[] scores;
 

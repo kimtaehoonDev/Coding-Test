@@ -4,16 +4,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-// 실패 후 성공 / 30분
-// 아이디어는 금방 떠올렸으나 엣지 케이스를 잡지 못한 문제
-// dp[0], dp[1], dp[2] 를 하드코딩했으면 해당 부분에서 예외가 일어날 거 예상했어야 함. 그런데 예상하지 못했음
-
+// 다시 풀이 -> 성공 / 10분
+// -> DP를 풀 때 범위를 여유있게 잡는게 편하다. 이 문제 같은 경우 입력값이 300까지니까 그냥 301 크기로 dp 만들면 예외케이스 고민할 필요가 없음
 public class Main {
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         int CNT = Integer.parseInt(br.readLine());
-        int[] values = new int[CNT + 1];
-        int[] dp = new int[CNT + 1];
+        int[] values = new int[301];
+        int[] dp = new int[301];
 
         for(int i=1; i<=CNT; i++) {
             values[i] = Integer.parseInt(br.readLine());
@@ -22,9 +20,7 @@ public class Main {
 
         dp[0] = 0;
         dp[1] = values[1];
-        if (CNT >= 2) {
-            dp[2] = values[1] + values[2];
-        }
+        dp[2] = values[1] + values[2];
 
         for(int i=3; i<=CNT; i++) {
             dp[i] = values[i] + Math.max(dp[i - 2], dp[i - 3] + values[i - 1]);

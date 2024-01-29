@@ -6,10 +6,11 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.StringTokenizer;
 
-// 실패 / DP
+// 답지 보고 풀이 / DP
+// 너무 어렵게 생각했다. 나중에 다시 풀어보기
 public class Main {
 
-    public static int INF = 20000;
+    public static int INF = 200000;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -28,24 +29,8 @@ public class Main {
         dp[0] = 0;
 
         for(int coin : coins) {
-            if (coin > K) {
-                break;
-            }
-            dp[coin] = 1;
-            int temp = coin;
-            while(temp <= K) {
-                int i = 1;
-                while (i * coin <= temp) {
-                    int usedCnt = temp / (coin * i);
-                    if (dp[temp - coin * usedCnt] == INF) {
-                        i++;
-                    } else {
-                        break;
-                    }
-                }
-                int usedCnt = temp / (coin * i);
-                dp[temp] = Math.min(dp[temp], usedCnt + dp[temp - coin * usedCnt]);
-                temp++;
+            for(int i = coin; i<=K; i++) {
+                dp[i] = Math.min(dp[i], dp[i - coin] + 1);
             }
 //            System.out.println(Arrays.toString(dp));
         }

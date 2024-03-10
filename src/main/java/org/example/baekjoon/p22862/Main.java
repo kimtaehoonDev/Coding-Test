@@ -44,8 +44,6 @@ public class Main {
          */
         int answer = 0;
         while (right + 1 < ary.length) {
-//            System.out.println(l + ", " + r + "=> 최대길이" + now + "삭제 : " + deleteElementCnt);
-
             if (limit >= deletedCnt) { // 1
                 if (isOdd(ary[right + 1])) {
                     deletedCnt++;

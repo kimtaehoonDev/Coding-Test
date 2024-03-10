@@ -3,13 +3,11 @@ package org.example.baekjoon.p22862;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.StringTokenizer;
 
-// 실패 / 40분 고민
-// 처음에 DP라고 생각함 -> 이후 구현으로 문제를 품 (아이디어 자체가 틀린듯)
-// 투포인터 문제. 이 유형 많이 풀어봐야겠음. 최소한 이 문제에서는 투포인터라는 걸 알아도 감을 못잡음
+// 30분 / 성공
+// 투포인터라는 걸 알고 풀었더니 풀 수 있었음
+
 public class Main {
 
     public static void main(String[] args) throws IOException {
@@ -17,74 +15,37 @@ public class Main {
         String[] split = br.readLine().split(" ");
         int N = Integer.parseInt(split[0]);
         int K = Integer.parseInt(split[1]); // 삭제 가능 최대 개수
-
+        int[] ary = new int[N];
         StringTokenizer st = new StringTokenizer(br.readLine());
-        List<Node> nodes = new ArrayList<>();
-        int conn = 0;
-        boolean prevOdd = false;
-        for(int i = 0; i<N; i++) {
-            int element = Integer.parseInt(st.nextToken());
-            if (i == 0) {
-                // 짝수 홀수 따라 값을 넣는다.
-                if (element % 2 != 0) {
-                    prevOdd = true;
-                }
-                conn++;
-                continue;
-            }
+        for (int i = 0; i < N; i++) {
+            ary[i] = Integer.parseInt(st.nextToken());
+        }
 
-            if (element % 2 == 0) {
-                if (!prevOdd) {
-                    conn++;
+        int l = 0;
+        int r = 0;
+        int now = 0;
+        int deleteElementCnt = 0;
+
+        int answer = 0;
+        while (r < ary.length) {
+//            System.out.println(l + ", " + r + "=> 최대길이" + now + "삭제 : " + deleteElementCnt);
+            if (K >= deleteElementCnt) { // right 포인터를 이동시킬 예정
+                if (ary[r] % 2 == 1) {
+                    deleteElementCnt++;
                 } else {
-                    nodes.add(new Node(prevOdd, conn));
-                    conn = 1;
-                    prevOdd = false;
+                    now++;
                 }
-            } else { // 홀수
-                if (prevOdd) {
-                    conn++;
+                r++;
+            } else { // K < deletedElementCnt
+                if (ary[l] % 2 == 1) {
+                    deleteElementCnt--;
                 } else {
-                    nodes.add(new Node(prevOdd, conn));
-                    conn = 1;
-                    prevOdd = true;
+                    now--;
                 }
+                l++;
             }
+            answer = Math.max(answer, now);
         }
-//        System.out.println(nodes);
-
-        int[] A = new int[nodes.size()];
-        int[] B = new int[nodes.size()];
-        int idx = -1;
-        int prev = 0;
-        for(Node node : nodes) {
-            idx++;
-            if (!node.isOdd) {
-                B[idx] = prev + node.connectedCnt;
-                prev = B[idx];
-
-            } else {
-                B[idx] = B[idx - 1];
-            }
-        }
+        System.out.println(answer);
     }
-
-    static class Node {
-        boolean isOdd;
-        int connectedCnt;
-
-        public Node(boolean isOdd, int connectedCnt) {
-            this.isOdd = isOdd;
-            this.connectedCnt = connectedCnt;
-        }
-
-        @Override
-        public String toString() {
-            return "Node{" +
-                "isOdd=" + isOdd +
-                ", connectedCnt=" + connectedCnt +
-                '}';
-        }
-    }
-
 }

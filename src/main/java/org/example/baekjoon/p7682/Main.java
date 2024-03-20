@@ -4,22 +4,30 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.StringJoiner;
 
-// 실패 -> 정답 참조 후 원인을 알았음(x가 정답이면 o는 1개 더 적어야 함. (xoxoxoxo.))
-// 그러나 좋은 풀이는 아닌거같음. 반례찾기문제가 될 뿐이고 누가 더 엣지케이스를 생각했냐 싸움이라고 생각함(이런 문제도 있기야 하겠지만)
-// 이 문제를 풀었다고 다른 문제에서 도움을 받을거라 생각하지 않음. 그래서 다른 풀이로 변경할예정
+// 성공 / 1시간 20분
+// dfs를 사용해서 가능한 모든 경우를 찾는다 -> 해당 값들을 Cases에 넣는다
+// 입력받은 값이 가능한지 검사한다.
 public class Main {
 
-    static char[][] graphs;
+    static Set<String> cases = new HashSet<>();
 
     public static void main(String[] args) throws IOException {
+        init();
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         String line;
         List<String> answers = new ArrayList<>();
         while (!(line = br.readLine()).equals("end")) {
-            answers.add(solve(line));
+            if (cases.contains(line)) {
+                answers.add("valid");
+            } else {
+                answers.add("invalid");
+            }
         }
         StringJoiner sj = new StringJoiner("\n");
         for (String answer : answers) {
@@ -28,76 +36,108 @@ public class Main {
         System.out.println(sj.toString());
     }
 
-    static int[] dx = new int[]{1, 0, -1, 0, 1, 1, -1, -1};
-    static int[] dy = new int[]{0, 1, 0, -1, 1, -1, 1, -1};
+    static int[] dx = new int[]{1, 1, 0, -1, -1, -1, 0, 1};
+    static int[] dy = new int[]{0, 1, 1, 1, 0, -1, -1, -1};
 
-    static String solve(String line) {
-        int oCnt = 0;
-        int xCnt = 0;
-        boolean xAnswer = false;
-        boolean oAnswer = false;
-        graphs = makeGraphs(line);
-        for (char[] row : graphs) {
-            for (char each : row) {
-                if (each == 'O') {
-                    oCnt++;
-                } else if (each == 'X') {
-                    xCnt++;
-                }
+    static void init() {
+        char[][] graph = new char[3][3];
+        for (char[] chars : graph) {
+            Arrays.fill(chars, '.');
+        }
+        boolean[] visited = new boolean[9];
+        dfs(graph, visited, 0);
+    }
+
+    static void dfs(char[][] graph, boolean[] visited, int seq) {
+        char rock; // 말
+        for (int i = 0; i < 9; i++) {
+            if (visited[i]) {
+                continue;
+            }
+            if (seq % 2 == 0) {
+                rock = 'X';
+            } else {
+                rock = 'O';
+            }
+            // i에 놓는다
+            visited[i] = true;
+            graph[i / 3][i % 3] = rock;
+
+            // 정답이 만들어졌으면 그만한다
+            boolean isTicTacTo = checkTicTacTo(graph);
+            if (isTicTacTo || isFull(visited)) {
+                String line = convertLine(graph);
+//                System.out.println("시작" + line);
+                cases.add(line);
+
+                visited[i] = false;
+                graph[i / 3][i % 3] = '.';
+                continue;
             }
 
-            // x의 개수는 O와 같거나, 1개 더 많다
-            if (xCnt != oCnt && xCnt != oCnt + 1) {
-                return "invalid";
-            }
+            // full
+            dfs(graph, visited, seq + 1);
+            visited[i] = false;
+            graph[i / 3][i % 3] = '.';
         }
 
+
+    }
+
+    private static boolean isFull(boolean[] visited) {
+        int visitedCnt = 0;
+        for (boolean b : visited) {
+            if (b) {
+                visitedCnt++;
+            }
+        }
+        return visitedCnt == 9;
+    }
+
+    static boolean checkTicTacTo(char[][] graph) {
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
-                if (graphs[i][j] == '.') {
+                if (graph[i][j] == '.') {
                     continue;
                 }
-                boolean fillLine = dfs(i, j);
-                System.out.println(i + " " + j + "Dptj " + fillLine);
-                if (fillLine) {
-                    if (graphs[i][j] == 'X') {
-                        xAnswer = true;
-                    } else {
-                        oAnswer = true;
+                for(int k = 0; k<4; k++) {
+                    // i,j에서 k방향으로 이동시켜봐라
+                    int x = i;
+                    int y = j;
+                    int connectsCnt = 0;
+                    while (graph[i][j] == graph[x][y]) {
+                        connectsCnt++;
+                        int nx = x + dx[k];
+                        int ny = y + dy[k];
+                        if (nx < 0 || ny < 0 || nx >= 3 || ny >= 3) {
+                            break;
+                        }
+                        x = nx;
+                        y = ny;
+                    }
+
+                    if (connectsCnt >= 3) {
+                        return true;
                     }
                 }
             }
         }
-        if (xAnswer && oAnswer) {
-            return "invalid";
-        }
-        return "valid";
+        return false;
     }
 
-    // i,j위치는 X아님 O.
-    static boolean dfs(int i, int j) {
-        // dfs
-        List<int[]> stack = new ArrayList<>();
-        for(int k = 0; k<8; k++) {
-            stack.add(new int[]{i, j, k, 1}); // 위치 && 방향 && 연속횟수
-        }
-        char original = graphs[i][j];
-        while (!stack.isEmpty()) {
-            int[] removed = stack.remove(stack.size() - 1);
-            if (removed[3] > 3) {
-                return true;
+    private static String convertLine(char[][] graph) {
+        StringBuilder sb = new StringBuilder();
+        for (int a = 0; a < 3; a++) {
+            for (int j = 0; j < 3; j++) {
+                sb.append(graph[a][j]);
             }
+        }
+        return sb.toString();
+    }
 
-            int nx = removed[0] + dx[removed[2]];
-            int ny = removed[1] + dy[removed[2]];
-            if (nx < 0 || ny < 0 || nx >= 3 || ny >= 3) {
-                continue;
-            }
-            if (original != graphs[nx][ny]) {
-                continue;
-            }
-            stack.add(new int[]{nx, ny, removed[2], removed[3] + 1});
-        }
+    static boolean solve(String line) {
+        char[][] graph = makeGraphs(line);
+
         return false;
     }
 

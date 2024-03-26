@@ -3,11 +3,8 @@ package org.example.baekjoon.p2470;
 import java.util.Arrays;
 import java.util.Scanner;
 
-// 성공 / 21분 / 투포인터
-// 투포인터가 확실한가 근거를 찾느라 오래걸림
-// left가 가리키는 값과 right가 가리키는 값을 '더한 값의 절대값'이 최소가 되어야함
-// left를 옮겼을 때와, right를 옮겼을 때 결과를 비교해 더 결과가 작은 쪽으로 이동
-// (여기가 중요) 만약 left를 인덱스 0 -> 1 로 옮겼다면, ary[0]을 사용해서 정답을 만들 수 없다는 가정이 필요 => 그림 그려서 몇 가지 케이스 확인 후 불가능하다 결론냄
+// 성공 / 21분 / 투포인터 -> 답안 참조 후 풀이 수정(포인터 옮기는 로직 변경)
+// 투포인터인걸 어떻게 알 수 있냐. 두 개의 숫자를 합해서 특정 값(0)을 만들어야 함
 public class Main {
 
     public static void main(String[] args) {
@@ -32,8 +29,9 @@ public class Main {
                 answer[0] = ary[left];
                 answer[1] = ary[right];
             }
-            if (Math.abs(ary[left + 1] + ary[right]) < Math.abs(ary[left] + ary[right - 1])) {
-                // 레프트 옮기는게 절대값이 더 작아짐
+
+            // 합이 음수일때 0에 가깝게 만드려면 지금보다 더 큰 수를 더해야 함(left이동
+            if (ary[left] + ary[right] < 0) {
                 left++;
             } else {
                 right--;

@@ -10,7 +10,7 @@ import java.util.Queue;
 import java.util.StringJoiner;
 import java.util.StringTokenizer;
 
-// 성공 / 28분 / bfs(약간변형)
+// 성공 / 28분 / bfs(정석 & 우선순위큐 활용)
 public class Main {
 
     public static void main(String[] args) throws IOException {
@@ -51,13 +51,10 @@ public class Main {
             return n1.acc - n2.acc;
         });
         heap.offer(new Node(0, 0, graph[0][0]));
+        visited[0][0] = true; // 여기서 처리
         while (!heap.isEmpty()) {
             Node target = heap.poll();
 //            System.out.println(target.x + "," + target.y + ": " + target.acc);
-            if (visited[target.x][target.y]) {
-                continue;
-            }
-            visited[target.x][target.y] = true; // 여기서 처리
             if (target.x == N - 1 && target.y == N - 1) {
                 return target.acc;
             }
@@ -72,6 +69,7 @@ public class Main {
                     continue;
                 }
                 heap.add(new Node(nx, ny, target.acc + graph[nx][ny]));
+                visited[nx][ny] = true; // 여기서 처리
             }
         }
 

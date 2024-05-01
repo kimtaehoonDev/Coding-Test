@@ -4,7 +4,9 @@ import java.util.Arrays;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
-// 실패 / 1시간 반 / 구현 / 머리꼬임
+// 성공 / 누적 시간 2시간 반? / 구현
+// 포인터를 이리저리 움직여가며 하다보니 머리가 복잡하게 꼬임
+// 확실히 포인터를 움직이는 문제에 약하다
 public class 디스크_컨트롤러 {
 
     public int solution(int[][] jobs) {
@@ -14,54 +16,56 @@ public class 디스크_컨트롤러 {
             }
             return j1[1] - j2[1];
         });
-        // System.out.println("정렬 결과");
-        // for(int[] job : jobs) {
-        //     System.out.println(Arrays.toString(job));
-        // }
+
         Queue<int[]> waitings = new PriorityQueue<>((j1, j2) -> {
             if (j1[1] != j2[1]) {
                 return j1[1] - j2[1]; // 작업 소요시간 짧은거부터
             }
             return j1[0] - j2[0]; // 작업 빨리 시작한 거부터
         });
+        waitings.offer(jobs[0]);
 
+        int idx = 1;
         int time = 0;
-        int idx = -1;
-        int totalTime = 0;
+        int acc = 0;
         while (true) {
+            if (waitings.isEmpty() && idx >= jobs.length) {
+                break;
+            }
+
             int[] now = null;
             if (!waitings.isEmpty()) {
                 now = waitings.poll();
-            } else { // 대기열에 아무것도 없으면 다음거 실행
-                if (idx + 1 >= jobs.length) {
-                    break; // 대기열도 없고, 전부 다 확인한 상태
-                }
-                now = jobs[idx + 1];
-            }
 
-            // now[0] 요청시각, now[1] 수행시간
-            time = Math.max(time, now[0]); // 현재 시간이랑 요청 시간 중 더 큰거(now 작업을 몇 시에 실행할래)
-            time += now[1]; // 일 끝
-            totalTime += (time - now[0]);
-            System.out.println(Arrays.toString(now) + "작업 수행 후 시간" + time);
-            System.out.println("총 대기&작업 시간 : " + totalTime);
-            // 현재 시간을 기준으로 작업 가능한 애들을 찾는다
-            boolean isLast = true;
-            for (int i = idx + 1; i < jobs.length; i++) {
-                if (jobs[i][0] <= time) { // 현재 시간이 10초인데, 9초에 실행가능한 애가 있으면 waiting에 넣기
-                    waitings.offer(jobs[i]);
-                } else { // i번째 원소는 아직 시간이 도달하지 않음. 이후 여기부터 다시 볼거
-                    isLast = false;
-                    idx = i - 1;
+                // now를 실행한다. -> 시간이 흘러가고, acc가 누적되고
+                time = Math.max(time, now[0]) + now[1];
+                acc += (time - now[0]);
+                // System.out.println(Arrays.toString(now) + " 작업 이후 : " + time);
+                // System.out.println(acc+"\n");
+
+                // 새롭게 큐에 들어오는 애들이 있는가?
+                boolean isLast = true;
+                for (int i = idx; i < jobs.length; i++) {
+                    if (jobs[i][0] <= time) { // 웨이팅 큐에 들어가야지
+                        idx = i + 1;
+                        waitings.offer(jobs[i]);
+                        // System.out.println(Arrays.toString(now) + "에서 " + idx);
+                    } else { // i번째 원소는 시작 시간이 한참 뒤다
+                        isLast = false;
+                        break;
+                    }
+                }
+            } else {
+                // 큐에 어떻게든 넣어야 해
+                if (idx >= jobs.length) {
                     break;
                 }
+                waitings.offer(jobs[idx++]);
             }
-            if (isLast) {
-                idx = jobs.length;
-            }
-        }
 
-        return totalTime / jobs.length;
+        }
+        // System.out.println(acc);
+        return acc / jobs.length;
     }
 
 }

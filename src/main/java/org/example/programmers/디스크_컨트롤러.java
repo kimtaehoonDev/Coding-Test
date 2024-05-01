@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
-// 성공 / 누적 시간 2시간 반? / 구현
+// 성공(재풀이) / 첫시도 2시간 넘게, 두번째 15분 / 구현
 // 포인터를 이리저리 움직여가며 하다보니 머리가 복잡하게 꼬임
 // 확실히 포인터를 움직이는 문제에 약하다
 public class 디스크_컨트롤러 {
@@ -23,47 +23,27 @@ public class 디스크_컨트롤러 {
             }
             return j1[0] - j2[0]; // 작업 빨리 시작한 거부터
         });
-        waitings.offer(jobs[0]);
 
-        int idx = 1;
         int time = 0;
+        int idx = 0;
         int acc = 0;
         while (true) {
-            if (waitings.isEmpty() && idx >= jobs.length) {
-                break;
+            while (idx < jobs.length && jobs[idx][0] <= time) {
+                waitings.offer(jobs[idx++]);
             }
-
-            int[] now = null;
-            if (!waitings.isEmpty()) {
-                now = waitings.poll();
-
-                // now를 실행한다. -> 시간이 흘러가고, acc가 누적되고
-                time = Math.max(time, now[0]) + now[1];
-                acc += (time - now[0]);
-                // System.out.println(Arrays.toString(now) + " 작업 이후 : " + time);
-                // System.out.println(acc+"\n");
-
-                // 새롭게 큐에 들어오는 애들이 있는가?
-                boolean isLast = true;
-                for (int i = idx; i < jobs.length; i++) {
-                    if (jobs[i][0] <= time) { // 웨이팅 큐에 들어가야지
-                        idx = i + 1;
-                        waitings.offer(jobs[i]);
-                        // System.out.println(Arrays.toString(now) + "에서 " + idx);
-                    } else { // i번째 원소는 시작 시간이 한참 뒤다
-                        isLast = false;
-                        break;
-                    }
-                }
-            } else {
-                // 큐에 어떻게든 넣어야 해
+            if (waitings.isEmpty()) {
                 if (idx >= jobs.length) {
                     break;
                 }
-                waitings.offer(jobs[idx++]);
+                time = jobs[idx][0];
+                continue;
             }
 
+            int[] now = waitings.poll(); // 현재 처리할 작업
+            time = Math.max(time, now[0]) + now[1];
+            acc += (time - now[0]);
         }
+
         // System.out.println(acc);
         return acc / jobs.length;
     }
